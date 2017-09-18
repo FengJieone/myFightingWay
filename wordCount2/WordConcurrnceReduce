@@ -1,0 +1,17 @@
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.mapreduce.Reducer;
+
+public class WordConcurrnceReduce extends Reducer<WordPair, IntWritable, WordPair, IntWritable> {
+
+    private IntWritable wordSum = new IntWritable();
+
+    protected void reduce(WordPair key, Iterable<IntWritable> values, Context context) throws java.io.IOException, InterruptedException {
+        int sum = 0;
+        for (IntWritable val : values) {
+            sum += val.get();
+        }
+        wordSum.set(sum);
+        context.write(key, wordSum);
+    };
+
+}
