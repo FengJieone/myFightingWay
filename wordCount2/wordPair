@@ -1,0 +1,65 @@
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
+import org.apache.hadoop.io.WritableComparable;
+
+public class WordPair implements WritableComparable<WordPair> {
+
+    private String wordA;
+    private String wordB;
+
+    public WordPair() {
+    }
+
+    public WordPair(String wordA, String wordB) {
+        this.wordA = wordA;
+        this.wordB = wordB;
+    }
+
+    @Override
+    public void write(DataOutput out) throws IOException {
+        out.writeUTF(wordA);
+        out.writeUTF(wordB);
+    }
+
+    @Override
+    public void readFields(DataInput in) throws IOException {
+        wordA = in.readUTF();
+        wordB = in.readUTF();
+    }
+
+    @Override
+    public String toString() {
+        return wordA + " " + wordB;
+    }
+
+    @Override
+    public int hashCode() {
+        return (wordA.hashCode() + wordB.hashCode()) * 9;
+    }
+
+    @Override
+    public int compareTo(WordPair o) {
+        if (equals(o)) {
+            return 0;
+        }
+        return (wordA + wordB).compareTo(o.wordA + o.wordB);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof WordPair) {
+            return false;
+        }
+        WordPair w = (WordPair) obj;
+        if (wordA.equals(w.wordA) && wordB.equals(w.wordB)) {
+            return true;
+        }
+        if (wordA.equals(w.wordB) && wordB.equals(w.wordA)) {
+            return true;
+        }
+        return false;
+    }
+
+}
