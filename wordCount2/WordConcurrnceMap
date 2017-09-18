@@ -1,0 +1,52 @@
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+
+public class WordConcurrnceMap extends Mapper<Text, Text, WordPair, IntWritable> {
+
+    //private int windowSize = 0;
+    private static final String WORD_REGEX = "([a-zA-Z]{1,})";// 仅仅匹配由字母组成的简单英文单词
+    private static final Pattern WORD_PATTERN = Pattern.compile(WORD_REGEX);// 用于识别英语单词(带连字符-)
+    private Queue<String> queue = new LinkedList<String>();
+    private static final IntWritable ONE = new IntWritable(1);
+
+    protected void setup(Context context) throws java.io.IOException, InterruptedException {
+        Configuration conf = context.getConfiguration();
+        //windowSize = conf.getInt("windowSize", 20);
+    };
+
+    protected void map(Text key, Text value, Context context) throws java.io.IOException, InterruptedException {
+        System.out.println("value:" + value);
+        //System.out.println("windowSize:" + windowSize);
+        Matcher matcher = WORD_PATTERN.matcher(value.toString());
+        while (matcher.find()) {
+            String word = matcher.group();
+            queue.add(word);
+            if (queue.size() >= 2) {
+                wordPair(context);
+            }
+        }
+        while (!(queue.size() <= 1)) {
+            wordPair(context);
+        }
+    };
+
+    private void wordPair(Context context) throws IOException, InterruptedException {
+        Iterator<String> it = queue.iterator();
+        String wordA = it.next();
+        //while (it.hasNext()){
+        String wordB = it.next();
+        context.write(new WordPair(wordA, wordB), ONE);
+        //}
+        queue.remove();
+    }
+
+}
